@@ -30,7 +30,6 @@ function startGame(mode) {
     game = createNPCGame();
   }
 
-  // ⭐🔥 ここが超重要（camera.jsと接続）
   window.game = game;
 
   game.start();
@@ -43,7 +42,7 @@ function backToMenu() {
   if (game) game.destroy();
 
   game = null;
-  window.game = null; // ⭐ 念のためクリア
+  window.game = null;
   gameMode = null;
 
   document.getElementById("menu").style.display = "block";

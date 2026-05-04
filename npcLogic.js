@@ -52,8 +52,6 @@ function createNPCGame() {
   }
 
   function handleClick(x, y) {
-    console.log("⑥ クリック時 allowed:", allowedPieceType);
-
     if (currentPlayer !== "player") return;
 
     if (!allowedPieceType) {
@@ -86,7 +84,7 @@ function createNPCGame() {
     board[y][x] = movingPiece;
     board[selected.y][selected.x] = null;
 
-    // ⭐ 成り（歩・銀のみ）
+    // 成り（歩・銀のみ）
     if (
       movingPiece &&
       !movingPiece.promoted &&
@@ -139,7 +137,7 @@ function createNPCGame() {
     board[move.to.y][move.to.x] = movingPiece;
     board[move.from.y][move.from.x] = null;
 
-    // ⭐ 成り（歩・銀のみ）
+    // 成り（歩・銀のみ）
     if (
       movingPiece &&
       !movingPiece.promoted &&
@@ -161,8 +159,6 @@ function createNPCGame() {
   }
 
   function render() {
-    console.log("⑤ render中 allowed:", allowedPieceType);
-
     renderBoard({
       boardElement,
       board,
@@ -199,9 +195,7 @@ function createNPCGame() {
       return currentPlayer;
     },
 
-    // ⭐ デバッグログ追加
     setAllowedPiece(pieceType) {
-      console.log("④ setAllowedPiece呼ばれた:", pieceType);
       allowedPieceType = pieceType;
     },
 

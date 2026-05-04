@@ -82,7 +82,7 @@ function createPVPGame() {
     board[y][x] = movingPiece;
     board[selected.y][selected.x] = null;
 
-    // ⭐ 成り（歩・銀のみ）
+    // 成り（歩・銀のみ）
     if (
       movingPiece &&
       !movingPiece.promoted &&
@@ -152,7 +152,6 @@ function createPVPGame() {
       passTurn();
     },
 
-    // ⭐🔥 これ追加（超重要）
     render() {
       render();
     }

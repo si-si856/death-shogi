@@ -23,7 +23,7 @@ function createInitialBoard() {
   ];
 }
 
-// ===== 🔥 AI用：駒検索（追加）=====
+// ===== AI用：駒検索 =====
 function findPieceByType(board, type, owner) {
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
@@ -103,7 +103,7 @@ function getValidMoves(board, pieceObj, x, y) {
     moves.push({ x: nx, y: ny });
   };
 
-  // ⭐ 成り（歩・銀）は金の動き
+  // 成り（歩・銀）は金の動き
   if (pieceObj.promoted && (piece === "歩" || piece === "銀")) {
     [
       [0, direction],
@@ -196,7 +196,7 @@ function renderBoard(state) {
     statusText,
     timer,
     gameMode,
-    allowedPieceType // ⭐追加
+    allowedPieceType
   } = state;
 
   boardElement.innerHTML = "";
@@ -214,7 +214,7 @@ function renderBoard(state) {
           div.style.transform = "rotate(180deg)";
         }
 
-        // ⭐ 追加：AI選択駒ハイライト
+        // AI選択駒ハイライト
         if (
           allowedPieceType &&
           cell.type === allowedPieceType &&

@@ -5,8 +5,6 @@ async function analyzePose(base64Image) {
       return null;
     }
 
-    console.log("AI送信開始");
-
     const validPieces = ["歩", "金", "銀", "角", "飛"];
 
     const extractJsonFromText = (text) => {
@@ -96,8 +94,6 @@ async function analyzePose(base64Image) {
 
     const data = await response.json();
 
-    console.log("AIレスポンス:", data);
-
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
     if (!rawText) return null;
@@ -136,13 +132,11 @@ async function analyzePose(base64Image) {
       }
     }
 
-    // ⭐ 完全防御（存在しない駒は弾く）
+    // 存在しない駒は弾く
     if (!chosenPiece) {
       console.warn("不正な駒:", rawText);
       return null;
     }
-
-    console.log("最終判定:", chosenPiece);
 
     return chosenPiece;
 

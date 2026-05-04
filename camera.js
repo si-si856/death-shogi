@@ -35,7 +35,7 @@ function captureWithCountdown(currentPlayer) {
     aiDebug.scrollIntoView({ block: "nearest" });
   }
 
-  // ⭐ ボタンロック
+  // ボタンロック
   if (btn) btn.disabled = true;
 
   function tick() {
@@ -43,8 +43,6 @@ function captureWithCountdown(currentPlayer) {
 
     if (count === 0) {
       const img = capturePlayerArea(currentPlayer);
-      console.log("取得画像:", img);
-
       document.getElementById("status").innerText = "判定中...";
       if (aiDebug) {
         aiDebug.textContent = "AIスコア: (判定中...)";
@@ -54,14 +52,11 @@ function captureWithCountdown(currentPlayer) {
 
       analyzePose(img).then(piece => {
         if (!piece) {
-          console.log("AI判定失敗");
           document.getElementById("status").innerText = "認識失敗";
 
           if (btn) btn.disabled = false;
           return;
         }
-
-        console.log("AI結果:", piece);
 
         // 盤面に存在しない駒が返ってきたらパス扱い
         if (
@@ -77,11 +72,11 @@ function captureWithCountdown(currentPlayer) {
           return;
         }
 
-        // ⭐ ゲームに反映
+        // ゲームに反映
         if (window.game && typeof game.setAllowedPiece === "function") {
           game.setAllowedPiece(piece);
 
-          // ⭐🔥 これが今回の核心（再描画）
+          // 再描画
           if (typeof game.render === "function") {
             game.render();
           }
@@ -90,7 +85,7 @@ function captureWithCountdown(currentPlayer) {
         document.getElementById("status").innerText =
           `AI判定: ${piece}\nこの駒のみ操作可能`;
 
-        // ⭐ ボタン復活
+        // ボタン復活
         if (btn) btn.disabled = false;
       });
 
