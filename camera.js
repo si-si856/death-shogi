@@ -27,6 +27,13 @@ function initCamera() {
 function captureWithCountdown(currentPlayer) {
   let count = 5;
   const btn = document.getElementById("captureBtn");
+  const aiDebug = document.getElementById("aiDebug");
+
+  if (aiDebug) {
+    aiDebug.textContent = "AIスコア: (待機中...)";
+    aiDebug.style.display = "block";
+    aiDebug.scrollIntoView({ block: "nearest" });
+  }
 
   // ⭐ ボタンロック
   if (btn) btn.disabled = true;
@@ -39,6 +46,11 @@ function captureWithCountdown(currentPlayer) {
       console.log("取得画像:", img);
 
       document.getElementById("status").innerText = "判定中...";
+      if (aiDebug) {
+        aiDebug.textContent = "AIスコア: (判定中...)";
+        aiDebug.style.display = "block";
+        aiDebug.scrollIntoView({ block: "nearest" });
+      }
 
       analyzePose(img).then(piece => {
         if (!piece) {
@@ -50,6 +62,20 @@ function captureWithCountdown(currentPlayer) {
         }
 
         console.log("AI結果:", piece);
+
+        // 盤面に存在しない駒が返ってきたらパス扱い
+        if (
+          window.game &&
+          typeof game.hasPiece === "function" &&
+          !game.hasPiece(piece) &&
+          typeof game.passTurn === "function"
+        ) {
+          document.getElementById("status").innerText =
+            `AI判定: ${piece}\n盤面に存在しないためパスします`;
+          game.passTurn();
+          if (btn) btn.disabled = false;
+          return;
+        }
 
         // ⭐ ゲームに反映
         if (window.game && typeof game.setAllowedPiece === "function") {
@@ -121,13 +147,3 @@ function capturePlayerArea(currentPlayer) {
 
   return cropCanvas.toDataURL("image/png");
 }
-
-console.log("① AI結果:", piece);
-
-game.setAllowedPiece(piece);
-
-console.log("② set後:", piece);
-
-game.render();
-
-console.log("③ render呼んだ");

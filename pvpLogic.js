@@ -14,6 +14,30 @@ function createPVPGame() {
     currentPlayer = currentPlayer === "player" ? "enemy" : "player";
   }
 
+  function passTurn() {
+    selected = null;
+    validMoves = [];
+    allowedPieceType = null;
+    switchTurn();
+    render();
+
+    if (isCheck(board, currentPlayer)) {
+      showToast(toast, "🚨 王手です！", true);
+    }
+  }
+
+  function hasPiece(pieceType) {
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        const cell = board[y][x];
+        if (cell && cell.owner === currentPlayer && cell.type === pieceType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   function updateStatus() {
     let text =
       currentPlayer === "player"
@@ -118,6 +142,14 @@ function createPVPGame() {
 
     setAllowedPiece(pieceType) {
       allowedPieceType = pieceType;
+    },
+
+    hasPiece(pieceType) {
+      return hasPiece(pieceType);
+    },
+
+    passTurn() {
+      passTurn();
     },
 
     // ⭐🔥 これ追加（超重要）

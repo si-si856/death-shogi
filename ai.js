@@ -130,6 +130,7 @@ async function analyzePose(base64Image) {
           normalized[p] = Number.isFinite(v) ? v : null;
         }
         console.log("AIスコア:", normalized);
+        window.dispatchEvent(new CustomEvent("ai:scores", { detail: normalized }));
       } catch (e) {
         // noop
       }

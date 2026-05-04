@@ -14,6 +14,30 @@ function createNPCGame() {
     currentPlayer = currentPlayer === "player" ? "enemy" : "player";
   }
 
+  function passTurn() {
+    selected = null;
+    validMoves = [];
+    allowedPieceType = null;
+    switchTurn();
+    render();
+
+    if (currentPlayer === "enemy") {
+      setTimeout(npcMove, 500);
+    }
+  }
+
+  function hasPiece(pieceType) {
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        const cell = board[y][x];
+        if (cell && cell.owner === currentPlayer && cell.type === pieceType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   function updateStatus() {
     let text =
       currentPlayer === "player"
@@ -179,6 +203,14 @@ function createNPCGame() {
     setAllowedPiece(pieceType) {
       console.log("④ setAllowedPiece呼ばれた:", pieceType);
       allowedPieceType = pieceType;
+    },
+
+    hasPiece(pieceType) {
+      return hasPiece(pieceType);
+    },
+
+    passTurn() {
+      passTurn();
     },
 
     render() {

@@ -154,6 +154,24 @@
       font-size: 14px;
       color: #555;
     }
+
+    /* ===== AIデバッグ表示 ===== */
+    #aiDebug {
+      margin-top: 12px;
+      width: 400px;
+      max-width: 90vw;
+      text-align: left;
+      background: #111;
+      color: #eaeaea;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: pre;
+      overflow: auto;
+      display: none;
+    }
   </style>
 </head>
 
@@ -189,6 +207,8 @@
       ← プレイヤー1 ｜ プレイヤー2 →
     </div>
 
+    <pre id="aiDebug"></pre>
+
   </div>
 
   <!-- ===== 将棋 ===== -->
@@ -221,6 +241,22 @@
 <script src="ai.js"></script>
 <script src="camera.js"></script>
 <script src="main.js"></script>
+
+<script>
+  // AIのスコア（デバッグ）表示
+  window.addEventListener("ai:scores", (e) => {
+    const el = document.getElementById("aiDebug");
+    if (!el) return;
+    const scores = e && e.detail ? e.detail : null;
+    if (!scores) return;
+
+    const order = ["歩", "金", "銀", "角", "飛"];
+    const parts = order.map((k) => `${k}: ${scores[k] ?? "?"}`);
+    el.textContent = `AIスコア: ${parts.join(", ")}`;
+    el.style.display = "block";
+    el.scrollIntoView({ block: "nearest" });
+  });
+</script>
 
 </body>
 </html>
