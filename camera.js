@@ -26,6 +26,10 @@ function initCamera() {
 // ===== カウントダウン撮影（5秒）=====
 function captureWithCountdown(currentPlayer) {
   let count = 5;
+  const btn = document.getElementById("captureBtn");
+
+  // ⭐ ボタンロック
+  if (btn) btn.disabled = true;
 
   function tick() {
     document.getElementById("status").innerText = `撮影まで ${count}秒`;
@@ -34,22 +38,34 @@ function captureWithCountdown(currentPlayer) {
       const img = capturePlayerArea(currentPlayer);
       console.log("取得画像:", img);
 
-      // ⭐ AIに送る
+      document.getElementById("status").innerText = "判定中...";
+
       analyzePose(img).then(piece => {
         if (!piece) {
           console.log("AI判定失敗");
+          document.getElementById("status").innerText = "認識失敗";
+
+          if (btn) btn.disabled = false;
           return;
         }
 
         console.log("AI結果:", piece);
 
-        document.getElementById("status").innerText =
-          `認識結果: ${piece}`;
+        // ⭐ ゲームに反映
+        if (window.game && typeof game.setAllowedPiece === "function") {
+          game.setAllowedPiece(piece);
 
-        // ⭐ ゲームに反映（ここが本命）
-        if (window.game && typeof game.applyAIMove === "function") {
-          game.applyAIMove(piece);
+          // ⭐🔥 これが今回の核心（再描画）
+          if (typeof game.render === "function") {
+            game.render();
+          }
         }
+
+        document.getElementById("status").innerText =
+          `AI判定: ${piece}\nこの駒のみ操作可能`;
+
+        // ⭐ ボタン復活
+        if (btn) btn.disabled = false;
       });
 
       return;
@@ -67,7 +83,6 @@ function capturePlayerArea(currentPlayer) {
   const width = video.videoWidth;
   const height = video.videoHeight;
 
-  // 🔥 カメラ未準備対策
   if (!width || !height) {
     console.warn("カメラ未準備");
     return null;
@@ -106,3 +121,13 @@ function capturePlayerArea(currentPlayer) {
 
   return cropCanvas.toDataURL("image/png");
 }
+
+console.log("① AI結果:", piece);
+
+game.setAllowedPiece(piece);
+
+console.log("② set後:", piece);
+
+game.render();
+
+console.log("③ render呼んだ");

@@ -7,47 +7,18 @@ function createPVPGame() {
   let currentPlayer = "player";
   let selected = null;
   let validMoves = [];
-  let timer = 30;
-  let timerInterval = null;
 
-  // ⭐ AI制限
   let allowedPieceType = null;
 
   function switchTurn() {
     currentPlayer = currentPlayer === "player" ? "enemy" : "player";
   }
 
-  function startTimer() {
-    clearInterval(timerInterval);
-    timer = 30;
-
-    timerInterval = setInterval(() => {
-      timer--;
-
-      if (timer <= 0) {
-        clearInterval(timerInterval);
-
-        selected = null;
-        validMoves = [];
-        allowedPieceType = null; // ⭐リセット
-
-        showToast(toast, "⏰ 時間切れ！ターン交代", true);
-
-        switchTurn();
-        startTimer();
-        render();
-        return;
-      }
-
-      updateStatus();
-    }, 1000);
-  }
-
   function updateStatus() {
     let text =
       currentPlayer === "player"
-        ? `🔵 プレイヤー1（${timer}秒）`
-        : `🔴 プレイヤー2（${timer}秒）`;
+        ? `🔵 プレイヤー1のターン`
+        : `🔴 プレイヤー2のターン`;
 
     if (isCheck(board, currentPlayer)) {
       text = "🚨 王手！\n" + text;
@@ -59,11 +30,13 @@ function createPVPGame() {
   function handleClick(x, y) {
     const cell = board[y][x];
 
-    // ===== 駒選択 =====
-    if (cell && cell.owner === currentPlayer) {
+    if (!allowedPieceType) {
+      showToast(toast, "先に撮影してください", true);
+      return;
+    }
 
-      // ⭐ AI制限（ここが本命）
-      if (allowedPieceType && cell.type !== allowedPieceType) {
+    if (cell && cell.owner === currentPlayer) {
+      if (cell.type !== allowedPieceType) {
         showToast(toast, "この駒は選べません", true);
         return;
       }
@@ -85,14 +58,24 @@ function createPVPGame() {
     board[y][x] = movingPiece;
     board[selected.y][selected.x] = null;
 
+    // ⭐ 成り（歩・銀のみ）
+    if (
+      movingPiece &&
+      !movingPiece.promoted &&
+      (movingPiece.type === "歩" || movingPiece.type === "銀") &&
+      ((movingPiece.owner === "player" && y === 0) ||
+        (movingPiece.owner === "enemy" && y === 4))
+    ) {
+      movingPiece.promoted = true;
+    }
+
     if (checkWin(captured)) return;
 
     selected = null;
     validMoves = [];
-    allowedPieceType = null; // ⭐ここ重要
+    allowedPieceType = null;
 
     switchTurn();
-    startTimer();
     render();
 
     if (isCheck(board, currentPlayer)) {
@@ -108,10 +91,12 @@ function createPVPGame() {
       validMoves,
       currentPlayer,
       statusText,
-      timer,
       gameMode: "pvp",
-      handleCellClick: handleClick
+      handleCellClick: handleClick,
+      allowedPieceType
     });
+
+    updateStatus();
   }
 
   return {
@@ -122,17 +107,22 @@ function createPVPGame() {
       validMoves = [];
       allowedPieceType = null;
 
-      startTimer();
       render();
     },
 
-    destroy() {
-      clearInterval(timerInterval);
+    destroy() {},
+
+    getCurrentPlayer() {
+      return currentPlayer;
     },
 
-    // ⭐ AIから呼ぶ
     setAllowedPiece(pieceType) {
       allowedPieceType = pieceType;
+    },
+
+    // ⭐🔥 これ追加（超重要）
+    render() {
+      render();
     }
   };
 }

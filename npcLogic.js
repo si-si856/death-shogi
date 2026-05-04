@@ -7,52 +7,18 @@ function createNPCGame() {
   let currentPlayer = "player";
   let selected = null;
   let validMoves = [];
-  let timer = 30;
-  let timerInterval = null;
 
-  // ⭐ AI制限
   let allowedPieceType = null;
 
   function switchTurn() {
     currentPlayer = currentPlayer === "player" ? "enemy" : "player";
   }
 
-  function startTimer() {
-    clearInterval(timerInterval);
-    timer = 30;
-
-    timerInterval = setInterval(() => {
-      timer--;
-
-      if (timer <= 0) {
-        clearInterval(timerInterval);
-
-        selected = null;
-        validMoves = [];
-        allowedPieceType = null; // ⭐リセット
-
-        showToast(toast, "⏰ 時間切れ！ターン交代", true);
-
-        switchTurn();
-        startTimer();
-        render();
-
-        if (currentPlayer === "enemy") {
-          setTimeout(npcMove, 500);
-        }
-
-        return;
-      }
-
-      updateStatus();
-    }, 1000);
-  }
-
   function updateStatus() {
     let text =
       currentPlayer === "player"
-        ? `🟢 あなた（${timer}秒）`
-        : `🤖 相手（${timer}秒）`;
+        ? `🟢 あなたのターン`
+        : `🤖 相手のターン`;
 
     if (isCheck(board, currentPlayer)) {
       text = "🚨 王手！\n" + text;
@@ -62,15 +28,19 @@ function createNPCGame() {
   }
 
   function handleClick(x, y) {
+    console.log("⑥ クリック時 allowed:", allowedPieceType);
+
     if (currentPlayer !== "player") return;
+
+    if (!allowedPieceType) {
+      showToast(toast, "先に撮影してください", true);
+      return;
+    }
 
     const cell = board[y][x];
 
-    // ===== 駒選択 =====
     if (cell && cell.owner === "player") {
-
-      // ⭐ AI制限（ここが本命）
-      if (allowedPieceType && cell.type !== allowedPieceType) {
+      if (cell.type !== allowedPieceType) {
         showToast(toast, "この駒は選べません", true);
         return;
       }
@@ -92,6 +62,17 @@ function createNPCGame() {
     board[y][x] = movingPiece;
     board[selected.y][selected.x] = null;
 
+    // ⭐ 成り（歩・銀のみ）
+    if (
+      movingPiece &&
+      !movingPiece.promoted &&
+      (movingPiece.type === "歩" || movingPiece.type === "銀") &&
+      ((movingPiece.owner === "player" && y === 0) ||
+        (movingPiece.owner === "enemy" && y === 4))
+    ) {
+      movingPiece.promoted = true;
+    }
+
     if (isCheck(board, "enemy")) {
       showToast(toast, "🔥 相手に王手！", true);
     }
@@ -100,10 +81,9 @@ function createNPCGame() {
 
     selected = null;
     validMoves = [];
-    allowedPieceType = null; // ⭐ここも重要
+    allowedPieceType = null;
 
     switchTurn();
-    startTimer();
     render();
 
     if (currentPlayer === "enemy") {
@@ -135,6 +115,17 @@ function createNPCGame() {
     board[move.to.y][move.to.x] = movingPiece;
     board[move.from.y][move.from.x] = null;
 
+    // ⭐ 成り（歩・銀のみ）
+    if (
+      movingPiece &&
+      !movingPiece.promoted &&
+      (movingPiece.type === "歩" || movingPiece.type === "銀") &&
+      ((movingPiece.owner === "player" && move.to.y === 0) ||
+        (movingPiece.owner === "enemy" && move.to.y === 4))
+    ) {
+      movingPiece.promoted = true;
+    }
+
     if (isCheck(board, "player")) {
       showToast(toast, "⚠️ あなたは王手されています！", true);
     }
@@ -142,11 +133,12 @@ function createNPCGame() {
     if (checkWin(captured)) return;
 
     switchTurn();
-    startTimer();
     render();
   }
 
   function render() {
+    console.log("⑤ render中 allowed:", allowedPieceType);
+
     renderBoard({
       boardElement,
       board,
@@ -154,10 +146,12 @@ function createNPCGame() {
       validMoves,
       currentPlayer,
       statusText,
-      timer,
       gameMode: "npc",
-      handleCellClick: handleClick
+      handleCellClick: handleClick,
+      allowedPieceType
     });
+
+    updateStatus();
   }
 
   return {
@@ -168,7 +162,6 @@ function createNPCGame() {
       validMoves = [];
       allowedPieceType = null;
 
-      startTimer();
       render();
 
       if (currentPlayer === "enemy") {
@@ -176,13 +169,20 @@ function createNPCGame() {
       }
     },
 
-    destroy() {
-      clearInterval(timerInterval);
+    destroy() {},
+
+    getCurrentPlayer() {
+      return currentPlayer;
     },
 
-    // ⭐ AIから呼ばれる
+    // ⭐ デバッグログ追加
     setAllowedPiece(pieceType) {
+      console.log("④ setAllowedPiece呼ばれた:", pieceType);
       allowedPieceType = pieceType;
+    },
+
+    render() {
+      render();
     }
   };
 }

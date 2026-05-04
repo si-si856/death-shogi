@@ -4,21 +4,21 @@ const SIZE = 5;
 function createInitialBoard() {
   return [
     [
-      { type: "飛", owner: "enemy" },
-      { type: "角", owner: "enemy" },
-      { type: "銀", owner: "enemy" },
-      { type: "金", owner: "enemy" },
-      { type: "玉", owner: "enemy" }
+      { type: "飛", owner: "enemy", promoted: false },
+      { type: "角", owner: "enemy", promoted: false },
+      { type: "銀", owner: "enemy", promoted: false },
+      { type: "金", owner: "enemy", promoted: false },
+      { type: "玉", owner: "enemy", promoted: false }
     ],
-    [null, null, null, null, { type: "歩", owner: "enemy" }],
+    [null, null, null, null, { type: "歩", owner: "enemy", promoted: false }],
     [null, null, null, null, null],
-    [{ type: "歩", owner: "player" }, null, null, null, null],
+    [{ type: "歩", owner: "player", promoted: false }, null, null, null, null],
     [
-      { type: "王", owner: "player" },
-      { type: "金", owner: "player" },
-      { type: "銀", owner: "player" },
-      { type: "角", owner: "player" },
-      { type: "飛", owner: "player" }
+      { type: "王", owner: "player", promoted: false },
+      { type: "金", owner: "player", promoted: false },
+      { type: "銀", owner: "player", promoted: false },
+      { type: "角", owner: "player", promoted: false },
+      { type: "飛", owner: "player", promoted: false }
     ]
   ];
 }
@@ -103,6 +103,19 @@ function getValidMoves(board, pieceObj, x, y) {
     moves.push({ x: nx, y: ny });
   };
 
+  // ⭐ 成り（歩・銀）は金の動き
+  if (pieceObj.promoted && (piece === "歩" || piece === "銀")) {
+    [
+      [0, direction],
+      [1, 0],
+      [-1, 0],
+      [0, -direction],
+      [1, direction],
+      [-1, direction]
+    ].forEach(([dx, dy]) => addMove(x + dx, y + dy));
+    return moves;
+  }
+
   if (piece === "歩") addMove(x, y + direction);
 
   if (piece === "王" || piece === "玉") {
@@ -114,13 +127,24 @@ function getValidMoves(board, pieceObj, x, y) {
   }
 
   if (piece === "金") {
-    [[0, direction],[1,0],[-1,0],[0,-direction],[1, direction],[-1, direction]]
-      .forEach(([dx,dy]) => addMove(x+dx, y+dy));
+    [
+      [0, direction],
+      [1, 0],
+      [-1, 0],
+      [0, -direction],
+      [1, direction],
+      [-1, direction]
+    ].forEach(([dx, dy]) => addMove(x + dx, y + dy));
   }
 
   if (piece === "銀") {
-    [[0, direction],[1, direction],[-1, direction],[1,-direction],[-1,-direction]]
-      .forEach(([dx,dy]) => addMove(x+dx, y+dy));
+    [
+      [0, direction],
+      [1, direction],
+      [-1, direction],
+      [1, -direction],
+      [-1, -direction]
+    ].forEach(([dx, dy]) => addMove(x + dx, y + dy));
   }
 
   if (piece === "桂") {
@@ -171,7 +195,8 @@ function renderBoard(state) {
     currentPlayer,
     statusText,
     timer,
-    gameMode
+    gameMode,
+    allowedPieceType // ⭐追加
   } = state;
 
   boardElement.innerHTML = "";
@@ -182,10 +207,20 @@ function renderBoard(state) {
       div.className = "cell";
 
       if (cell) {
-        div.innerText = cell.type;
+        div.innerText = cell.promoted ? "成" + cell.type : cell.type;
+
         if (cell.owner === "enemy") {
           div.classList.add("enemy");
           div.style.transform = "rotate(180deg)";
+        }
+
+        // ⭐ 追加：AI選択駒ハイライト
+        if (
+          allowedPieceType &&
+          cell.type === allowedPieceType &&
+          cell.owner === currentPlayer
+        ) {
+          div.classList.add("highlight");
         }
       }
 
@@ -201,6 +236,7 @@ function renderBoard(state) {
       boardElement.appendChild(div);
     });
   });
+
 
   const topLabel = document.getElementById("topPlayerLabel");
   const bottomLabel = document.getElementById("bottomPlayerLabel");

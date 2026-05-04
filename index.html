@@ -22,7 +22,6 @@
       cursor: pointer;
     }
 
-    /* ===== レイアウト ===== */
     #gameLayout {
       display: flex;
       justify-content: center;
@@ -38,7 +37,6 @@
       align-items: center;
     }
 
-    /* ===== 盤面 ===== */
     #board {
       display: none;
       grid-template-columns: repeat(5, 70px);
@@ -64,7 +62,11 @@
       color: white;
     }
 
-    /* ===== プレイヤーカード ===== */
+    .highlight {
+      border: 3px solid red;
+      box-shadow: 0 0 10px red;
+    }
+
     .player-card {
       display: none;
       align-items: center;
@@ -77,18 +79,13 @@
       justify-content: center;
     }
 
-    .player-card .icon {
-      font-size: 28px;
-    }
-
-    /* ===== ステータス ===== */
     #status {
       font-size: 20px;
       margin-top: 10px;
       white-space: pre-line;
+      font-weight: bold;
     }
 
-    /* ===== トースト ===== */
     #toast {
       position: fixed;
       top: 20px;
@@ -105,14 +102,57 @@
       opacity: 1;
     }
 
-    /* ===== カメラ ===== */
     #cameraContainer {
       margin-top: 20px;
+      position: relative;
     }
 
     video {
       width: 400px;
       border: 2px solid black;
+    }
+
+    .camera-guide {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      pointer-events: none;
+      border: 2px dashed gray;
+      transition: 0.3s;
+    }
+
+    /* ⭐ アクティブ側 */
+    .active-guide {
+      border: 3px solid red;
+      box-shadow: 0 0 10px red;
+    }
+
+    #leftGuide {
+      left: 0;
+    }
+
+    #rightGuide {
+      right: 0;
+    }
+
+    #captureBtn {
+      font-size: 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+
+    #captureBtn:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    #cameraHint {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #555;
     }
   </style>
 </head>
@@ -131,18 +171,27 @@
   メニューに戻る
 </button>
 
-<!-- ===== ここが重要：左右レイアウト ===== -->
 <div id="gameLayout">
 
-  <!-- 左：カメラ -->
+  <!-- ===== カメラ ===== -->
   <div id="leftPane">
-    <div id="cameraContainer"></div>
 
-    <button onclick="testCapture('player')">右側（player）撮影</button>
-    <button onclick="testCapture('enemy')">左側（enemy）撮影</button>
+    <div id="cameraContainer">
+      <div id="leftGuide" class="camera-guide"></div>
+      <div id="rightGuide" class="camera-guide"></div>
+    </div>
+
+    <button id="captureBtn" onclick="captureCurrentPlayer()">
+      📸 撮影
+    </button>
+
+    <div id="cameraHint">
+      ← プレイヤー1 ｜ プレイヤー2 →
+    </div>
+
   </div>
 
-  <!-- 右：将棋 -->
+  <!-- ===== 将棋 ===== -->
   <div id="rightPane">
 
     <div id="topPlayerLabel" class="player-card">
@@ -165,7 +214,6 @@
 
 <div id="toast"></div>
 
-<!-- 正しい順番 -->
 <script src="shared.js"></script>
 <script src="pvpLogic.js"></script>
 <script src="npcLogic.js"></script>

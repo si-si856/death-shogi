@@ -23,18 +23,28 @@ function startGame(mode) {
     bottomName.innerText = "あなた";
   }
 
+  // ===== ゲーム生成 =====
   if (mode === "pvp") {
     game = createPVPGame();
   } else {
     game = createNPCGame();
   }
 
+  // ⭐🔥 ここが超重要（camera.jsと接続）
+  window.game = game;
+
   game.start();
+
+  updateCameraGuide();
 }
 
 // ===== 戻る =====
 function backToMenu() {
   if (game) game.destroy();
+
+  game = null;
+  window.game = null; // ⭐ 念のためクリア
+  gameMode = null;
 
   document.getElementById("menu").style.display = "block";
   document.getElementById("board").style.display = "none";
@@ -46,12 +56,47 @@ function backToMenu() {
   document.getElementById("status").innerText = "モードを選択してください";
 }
 
-// ===== カメラ =====
+// ===== カメラ初期化 =====
 window.onload = () => {
   initCamera();
 };
 
-// ===== テスト =====
-function testCapture(side) {
-  captureWithCountdown(side);
+// ===== 撮影 =====
+function captureCurrentPlayer() {
+  if (!game) return;
+
+  const current = game.getCurrentPlayer();
+
+  // ===== NPCモード =====
+  if (gameMode === "npc") {
+    updateStatusGuide("あなたのターンです\n中央に立って撮影してください");
+    captureWithCountdown("player");
+    return;
+  }
+
+  // ===== PVPモード =====
+  if (current === "player") {
+    updateStatusGuide("プレイヤー1のターン\n左側に立ってください");
+  } else {
+    updateStatusGuide("プレイヤー2のターン\n右側に立ってください");
+  }
+
+  captureWithCountdown(current);
+}
+
+// ===== ステータス補助 =====
+function updateStatusGuide(text) {
+  const status = document.getElementById("status");
+  status.innerText = text;
+}
+
+// ===== カメラガイド表示制御 =====
+function updateCameraGuide() {
+  const left = document.getElementById("leftGuide");
+  const right = document.getElementById("rightGuide");
+
+  if (!left || !right) return;
+
+  left.style.borderColor = "red";
+  right.style.borderColor = "red";
 }
