@@ -5,6 +5,18 @@ async function analyzePose(base64Image) {
       return null;
     }
 
+    const apiKey =
+      typeof API_KEY !== "undefined" ? API_KEY : window.API_KEY;
+    const model =
+      typeof MODEL !== "undefined"
+        ? MODEL
+        : window.MODEL || "gemini-2.5-flash";
+
+    if (!apiKey) {
+      console.error("API_KEY が未設定です（config.js を用意してください）");
+      return null;
+    }
+
     const validPieces = ["歩", "金", "銀", "角", "飛"];
 
     const extractJsonFromText = (text) => {
@@ -36,7 +48,7 @@ async function analyzePose(base64Image) {
     };
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
